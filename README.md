@@ -10,8 +10,12 @@
 
 ## 安装方法
 #### 通过 GitHub 安装 SDK
-> - 运行`go get github.com/lanxinplus/lanxinplus-openapi-go-sdk/sdk` 命令获取远程代码包
-> - 在您的代码中使用 `import "github.com/lanxinplus/lanxinplus-openapi-go-sdk/sdk" `来引入 Go SDK包
+> - 运行`go get github.com/yongxinz/lanxinplus-openapi-go-sdk/sdk` 命令获取远程代码包
+> - 在您的代码中使用 `import "github.com/yongxinz/lanxinplus-openapi-go-sdk/sdk" `来引入 Go SDK包
+
+## 此仓库特性
+
+在官方基础上增加了 bot webhook API，具体新增代码可以通过搜索 `/v1/bot/hook/messages/create` 查看。
 
 ## 快速使用
 #### 获取 APP_TOKEN
@@ -20,7 +24,7 @@ import (
 	"context"
 	"fmt"
 	
-	"github.com/lanxinplus/lanxinplus-openapi-go-sdk/sdk"
+	"github.com/yongxinz/lanxinplus-openapi-go-sdk/sdk"
 )
 
 //注：以下配置信息从蓝信 开发者中心-应用开发-基本信息 中获取
@@ -55,7 +59,7 @@ func Example() {
 
 ## 测试用例使用说明
 ### 运行test
-> - 拷贝示例文件到Go SDK的安装路径（即GOPATH变量中的第一个路径），进入Go SDK的代码目录`src/github.com/lanxinplus/lanxinplus-openapi-go-sdk/sdk`
+> - 拷贝示例文件到Go SDK的安装路径（即GOPATH变量中的第一个路径），进入Go SDK的代码目录`src/github.com/yongxinz/lanxinplus-openapi-go-sdk/sdk`
 > - 修改sdk_test.go文件const里的SERVER、APP_ID、APP_SECRET 配置
 > - 请在您的工程目录下执行`go test -run Test_XXX`
 
