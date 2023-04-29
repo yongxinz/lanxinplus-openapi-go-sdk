@@ -1,5 +1,7 @@
 # 蓝信 Go SDK
 
+此仓库在官方基础上增加了 bot webhook API，具体新增代码可以通过搜索 `/v1/bot/hook/messages/create` 查看。
+
 ## 关于
 > - 此Go SDK基于[蓝信开放平台API]构建
 > - 蓝信开放平台，便于企业应用与蓝信集成，让协同与管理更加高效
@@ -12,10 +14,6 @@
 #### 通过 GitHub 安装 SDK
 > - 运行`go get github.com/yongxinz/lanxinplus-openapi-go-sdk/sdk` 命令获取远程代码包
 > - 在您的代码中使用 `import "github.com/yongxinz/lanxinplus-openapi-go-sdk/sdk" `来引入 Go SDK包
-
-## 此仓库特性
-
-在官方基础上增加了 bot webhook API，具体新增代码可以通过搜索 `/v1/bot/hook/messages/create` 查看。
 
 ## 快速使用
 #### 获取 APP_TOKEN
