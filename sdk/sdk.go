@@ -2291,6 +2291,82 @@ func (m *V1MessagesCreateResponse) ToString() string {
 	return ToJsonString(m)
 }
 
+type V1BotHookMessagesCreateRequestBody struct {
+	Timestamp *string     `json:"timestamp,omitempty"` // 时间戳，精确到秒，当webhook机器人的安全设置为加签时必填
+	Sign      *string     `json:"sign,omitempty"`      // 签名数据，当webhook机器人的安全设置为加签时必填
+	MsgData   interface{} `json:"msgData,omitempty"`   // type 类型名对应的同名的格式化数据。每种格式都有对应的数据类型
+	MsgType   *string     `json:"msgType,omitempty"`   // 发送的消息格式，支持以下几种："text"，"oacard"，"linkCard"，"appCard"
+}
+
+func (m *V1BotHookMessagesCreateRequestBody) SetTimestamp(timestamp string) *V1BotHookMessagesCreateRequestBody {
+	m.Timestamp = &timestamp
+	return m
+}
+
+func (m *V1BotHookMessagesCreateRequestBody) SetSign(sign string) *V1BotHookMessagesCreateRequestBody {
+	m.Sign = &sign
+	return m
+}
+
+func (m *V1BotHookMessagesCreateRequestBody) SetMsgData(msgData interface{}) *V1BotHookMessagesCreateRequestBody {
+	m.MsgData = msgData
+	return m
+}
+
+func (m *V1BotHookMessagesCreateRequestBody) GetMsgData() interface{} {
+	if m != nil {
+		return m.MsgData
+	}
+	return nil
+}
+
+func (m *V1BotHookMessagesCreateRequestBody) SetMsgType(msgType string) *V1BotHookMessagesCreateRequestBody {
+	m.MsgType = &msgType
+	return m
+}
+
+func (m *V1BotHookMessagesCreateRequestBody) GetMsgType() string {
+	if m != nil {
+		return *m.MsgType
+	}
+	return ""
+}
+
+type V1BotHookMessagesCreateData struct {
+	MsgId *string `json:"msgId,omitempty"` // 消息标识，供其他接口查询进度使用。目前只有组织内应用支持返回消息ID，ISV应用不返回ID
+}
+
+type V1BotHookMessagesCreateResponse struct {
+	Data    *V1BotHookMessagesCreateData `json:"data,omitempty"`
+	ErrCode *int                         `json:"errCode,omitempty"`
+	ErrMsg  *string                      `json:"errMsg,omitempty"`
+}
+
+func (m *V1BotHookMessagesCreateResponse) GetData() *V1BotHookMessagesCreateData {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *V1BotHookMessagesCreateResponse) GetErrCode() int {
+	if m != nil {
+		return *m.ErrCode
+	}
+	return 0
+}
+
+func (m *V1BotHookMessagesCreateResponse) GetErrMsg() string {
+	if m != nil {
+		return *m.ErrMsg
+	}
+	return ""
+}
+
+func (m *V1BotHookMessagesCreateResponse) ToString() string {
+	return ToJsonString(m)
+}
+
 type V1MessagesNotificationCreateData struct {
 	MsgIds []*string       `json:"msgIds,omitempty"`
 	Status []*BaseResponse `json:"status,omitempty"`
@@ -5913,6 +5989,21 @@ func (m *V1MessagesCreateParams) SetUserToken(userToken string) *V1MessagesCreat
 	return m
 }
 
+type V1BotHookMessagesCreateParams struct {
+	HookToken string `json:"hook_token"`          // hook_token
+	AppToken  string `json:"app_token,omitempty"` // app_token
+}
+
+func (m *V1BotHookMessagesCreateParams) SetHookToken(hookToken string) *V1BotHookMessagesCreateParams {
+	m.HookToken = hookToken
+	return m
+}
+
+func (m *V1BotHookMessagesCreateParams) SetAppToken(appToken string) *V1BotHookMessagesCreateParams {
+	m.AppToken = appToken
+	return m
+}
+
 type V1MessagesNotificationCreateParams struct {
 	AppToken  string  `json:"app_token"`            // app_token
 	UserToken *string `json:"user_token,omitempty"` // user_token
@@ -6545,6 +6636,9 @@ type ClientInterface interface {
 	// /v1/messages/create
 	V1MessagesCreateWithBody(ctx context.Context, params *V1MessagesCreateParams, body V1MessagesCreateRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// /v1/bot/hook/messages/create
+	V1BotHookMessagesCreateWithBody(ctx context.Context, params *V1BotHookMessagesCreateParams, body V1BotHookMessagesCreateRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// /v1/messages/notification/create
 	V1MessagesNotificationCreateWithBody(ctx context.Context, params *V1MessagesNotificationCreateParams, body V1MessagesNotificationCreateRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -6818,6 +6912,18 @@ func (c *Client) V1MediasPathFetch(ctx context.Context, mediaid string, params *
 
 func (c *Client) V1MessagesCreateWithBody(ctx context.Context, params *V1MessagesCreateParams, body V1MessagesCreateRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewV1MessagesCreateRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) V1BotHookMessagesCreateWithBody(ctx context.Context, params *V1BotHookMessagesCreateParams, body V1BotHookMessagesCreateRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewV1BotHookMessagesCreateRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8289,6 +8395,76 @@ func NewV1MessagesCreateRequestWithBody(server string, params *V1MessagesCreateP
 	if params.UserToken != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "user_token", runtime.ParamLocationQuery, *params.UserToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+func NewV1BotHookMessagesCreateRequest(server string, params *V1BotHookMessagesCreateParams, body V1BotHookMessagesCreateRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewV1BotHookMessagesCreateRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+func NewV1BotHookMessagesCreateRequestWithBody(server string, params *V1BotHookMessagesCreateParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := "/v1/bot/hook/messages/create"
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "hook_token", runtime.ParamLocationQuery, params.HookToken); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	if params.AppToken != "" {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "app_token", runtime.ParamLocationQuery, params.AppToken); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -10594,6 +10770,9 @@ type ClientWithResponsesInterface interface {
 	// /v1/messages/create
 	V1MessagesCreateWithBodyWithResponse(ctx context.Context, params *V1MessagesCreateParams, body V1MessagesCreateRequestBody, reqEditors ...RequestEditorFn) (*V1MessagesCreateResponse, error)
 
+	// /v1/bot/hook/messages/create
+	V1BotHookMessagesCreateWithBodyWithResponse(ctx context.Context, params *V1BotHookMessagesCreateParams, body V1BotHookMessagesCreateRequestBody, reqEditors ...RequestEditorFn) (*V1MessagesCreateResponse, error)
+
 	// /v1/messages/notification/create
 	V1MessagesNotificationCreateWithBodyWithResponse(ctx context.Context, params *V1MessagesNotificationCreateParams, body V1MessagesNotificationCreateRequestBody, reqEditors ...RequestEditorFn) (*V1MessagesNotificationCreateResponse, error)
 
@@ -10811,6 +10990,14 @@ func (c *ClientWithResponses) V1MessagesCreateWithBodyWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseV1MessagesCreateResponse(rsp)
+}
+
+func (c *ClientWithResponses) V1BotHookMessagesCreateWithBodyWithResponse(ctx context.Context, params *V1BotHookMessagesCreateParams, body V1BotHookMessagesCreateRequestBody, reqEditors ...RequestEditorFn) (*V1BotHookMessagesCreateResponse, error) {
+	rsp, err := c.V1BotHookMessagesCreateWithBody(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseV1BotHookMessagesCreateResponse(rsp)
 }
 
 func (c *ClientWithResponses) V1MessagesNotificationCreateWithBodyWithResponse(ctx context.Context, params *V1MessagesNotificationCreateParams, body V1MessagesNotificationCreateRequestBody, reqEditors ...RequestEditorFn) (*V1MessagesNotificationCreateResponse, error) {
@@ -11287,6 +11474,21 @@ func ParseV1MessagesCreateResponse(rsp *http.Response) (*V1MessagesCreateRespons
 	return response, nil
 }
 
+func ParseV1BotHookMessagesCreateResponse(rsp *http.Response) (*V1BotHookMessagesCreateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := new(V1BotHookMessagesCreateResponse)
+	if err := json.Unmarshal(bodyBytes, response); err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
 func ParseV1MessagesNotificationCreateResponse(rsp *http.Response) (*V1MessagesNotificationCreateResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
@@ -11736,4 +11938,3 @@ func ParseV2StaffsSearchResponse(rsp *http.Response) (*V2StaffsSearchResponse, e
 
 	return response, nil
 }
-
